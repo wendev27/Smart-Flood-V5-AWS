@@ -1,0 +1,134 @@
+.emptyState,
+.loadingState,
+.errorState {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 150px;
+  padding: 22px;
+  text-align: center;
+}
+
+.emptyState {
+  background: #f8fbff;
+  border: 1px dashed #bfd5ff;
+  color: #1e3a8a;
+}
+
+.emptyIcon,
+.errorIcon {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 900;
+  height: 34px;
+  justify-content: center;
+  margin-bottom: 10px;
+  width: 34px;
+}
+
+.emptyIcon {
+  background: #e0f2fe;
+  color: var(--color-blue);
+}
+
+.emptyState strong,
+.errorState strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.emptyState p,
+.loadingState p,
+.errorState p {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 6px 0 0;
+  max-width: 520px;
+}
+
+.emptyState button {
+  margin-top: 14px;
+}
+
+.searchEmptyState {
+  align-self: stretch;
+  background: transparent;
+  border: 0;
+  box-sizing: border-box;
+  color: rgba(0, 136, 255, 0.58);
+  margin: 0 auto;
+  min-height: 430px;
+  padding: 32px 24px;
+  width: 100%;
+}
+
+.searchEmptyState strong {
+  color: rgba(0, 136, 255, 0.58);
+  font-size: 24px;
+}
+
+.searchEmptyState p {
+  color: rgba(0, 136, 255, 0.58);
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 24px;
+}
+
+.noResultsImage {
+  height: 150px;
+  margin-bottom: 20px;
+  opacity: 0.78;
+  width: 150px;
+}
+
+.loadingState {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  min-height: 120px;
+}
+
+.ripple {
+  color: var(--color-blue);
+  height: 72px;
+  width: 72px;
+}
+
+.errorState {
+  align-items: flex-start;
+  background: #fff7f7;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  flex-direction: row;
+  gap: 12px;
+  min-height: 0;
+  text-align: left;
+}
+
+.errorIcon {
+  background: #fee2e2;
+  color: #dc2626;
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.errorState button {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .errorState {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .errorState button {
+    margin-left: 0;
+  }
+}

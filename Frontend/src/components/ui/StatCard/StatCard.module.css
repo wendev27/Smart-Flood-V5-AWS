@@ -1,0 +1,112 @@
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 26px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  min-height: 150px;
+  overflow: hidden;
+  padding: 30px 32px 24px 96px;
+  position: relative;
+}
+
+.card::after {
+  background: rgba(0, 136, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  content: "";
+  height: 44px;
+  left: 32px;
+  position: absolute;
+  top: 32px;
+  width: 44px;
+}
+
+.interactive {
+  cursor: pointer;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.interactive:hover,
+.interactive:focus-visible {
+  box-shadow: 0 16px 26px rgba(15, 23, 42, 0.18);
+  outline: 2px solid rgba(15, 97, 255, 0.28);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+
+.active {
+  box-shadow: 0 0 0 3px rgba(15, 97, 255, 0.2), 0 16px 26px rgba(15, 23, 42, 0.16);
+}
+
+.card span,
+.card strong,
+.card p {
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.card span {
+  color: #1e1e1e;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.card strong {
+  color: #0050a2;
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: #0088ff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cyan strong { color: #ff3830; }
+.cyan::after { background: rgba(255, 56, 48, 0.12); }
+
+.danger {
+  color: #ff2f1f !important;
+}
+
+.info {
+  color: var(--color-blue) !important;
+}
+
+@media (min-width: 900px) {
+  .card {
+    min-height: 150px;
+  }
+}
+
+.card .statIcon {
+  align-items: center;
+  color: #0088ff;
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  left: 32px;
+  margin: 0;
+  position: absolute;
+  top: 32px;
+  width: 44px;
+  z-index: 2;
+}
+
+.card .statIcon svg {
+  height: 22px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  width: 22px;
+}
+
+.cyan .statIcon { color: #ff3830; }

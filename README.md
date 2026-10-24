@@ -1,780 +1,193 @@
-# SmartFlood - AWS Containerized Deployment
+# SmartFlood V5 AWS Migration
 
-> Production-oriented deployment of SmartFlood using Docker containers and AWS cloud infrastructure.
+SmartFlood V5 is the AWS migration destination for the SmartFlood V4.1
+application. Phase 1 imports the application source and records its verified
+runtime boundaries. AWS infrastructure, containers, CI/CD, and deployment are
+separate later phases.
 
-## Overview
+## Application architecture
 
-SmartFlood is an AI-assisted flood monitoring and relief allocation platform designed to support disaster response operations.
+The imported application has three services:
 
-This project documents the migration of SmartFlood from a Google Cloud Run deployment to an AWS-based containerized architecture.
+| Service  | Implementation                      |   Local port | Production entry point                                                        |
+| -------- | ----------------------------------- | -----------: | ----------------------------------------------------------------------------- |
+| Frontend | Next.js / React / TypeScript        |         3000 | `npm start`                                                                   |
+| API      | Next.js route handlers / TypeScript |         5000 | `npm start` (script binds port 5000)                                          |
+| AI       | FastAPI / Python                    | 8000 locally | `gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT` |
 
-The migration focuses on:
+The API is not an Express service. It owns the application route handlers,
+authentication/session handling, RBAC checks, MongoDB access, Supabase access,
+reporting, and the bridge to the AI service.
 
-- Containerized application services
-- AWS cloud infrastructure
-- Scalable service deployment
-- Secure networking
-- Centralized logging and monitoring
-- Automated CI/CD
-- Infrastructure as Code
-- DevSecOps practices
-
----
-
-## Project Architecture
-
-The target deployment architecture separates SmartFlood into independently deployable services.
+The request path is intentionally preserved:
 
 ```text
-                         Internet
-                            |
-                            v
-                  +-------------------+
-                  | Application Load  |
-                  |     Balancer      |
-                  +---------+---------+
-                            |
-             +--------------+--------------+
-             |              |              |
-             v              v              v
-       +-----------+  +-----------+  +-----------+
-       | Frontend  |  |  Backend  |  | AI Service|
-       | Container |  | Container |  | Container |
-       +-----------+  +-----------+  +-----------+
-             |              |              |
-             +--------------+--------------+
-                            |
-              +-------------+-------------+
-              |                           |
-              v                           v
-       +--------------+            +--------------+
-       |   Supabase   |            |   MongoDB    |
-       |   PostgreSQL |            |    Atlas     |
-       +--------------+            +--------------+
-
-                         AWS VPC
+Browser
+  |
+  | /api/* requests
+  v
+Frontend Next.js rewrite
+  |
+  v
+Backend/api Next.js route handlers
+  |
+  +--> MongoDB Atlas
+  +--> Supabase
+  +--> Backend/ai FastAPI
 ```
 
----
+The frontend rewrite is configured by `NEXT_PUBLIC_API_URL` in
+`Frontend/next.config.ts`. The browser should use the frontend `/api/*`
+boundary; direct public access to the API or AI service is not required by the
+verified application flow.
 
-## Application Services
+## Health endpoints
+
+The verified liveness endpoints are:
+
+| Service  | Endpoint                    | Behavior                                                                        |
+| -------- | --------------------------- | ------------------------------------------------------------------------------- |
+| Frontend | No dedicated endpoint found | Use the application root only after deployment health-check design is reviewed. |
+| API      | `/api/health`               | Static response; currently retains its existing V3 wording.                     |
+| AI       | `/health`                   | Static service status response.                                                 |
+
+These endpoints are liveness checks. They do not verify MongoDB, Supabase,
+AI-service, or weather-provider readiness. The API health response is
+deliberately unchanged in this phase; correcting its stale message is a
+separate application change.
+
+## Repository layout
+
+```text
+Frontend/                 Next.js web application
+Backend/api/              Next.js API route-handler application
+Backend/ai/               FastAPI AI service
+supabase/migrations/      Existing migration references; not applied here
+README.md                 Migration and runtime documentation
+```
+
+Local dependencies, generated output, local environments, credentials, and
+repository metadata are intentionally not part of this repository. In
+particular, `.env` files, `node_modules`, `.next`, `.venv`, Python caches, and
+the V4.1 `.git` directory are excluded.
+
+## Local development
+
+Frontend:
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+API:
+
+```bash
+cd Backend/api
+npm install
+npm run dev
+```
+
+AI service:
+
+```bash
+cd Backend/ai
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt pytest
+.venv/bin/python -m uvicorn app.main:app --reload --port 8000
+```
+
+Use the tracked `.env.example` files as templates. Do not copy local `.env`
+files or place production credentials in the repository.
+
+## Environment variables
 
 ### Frontend
 
-The SmartFlood frontend is responsible for the web-based administrative interface and visualization layer.
+Public/browser configuration:
 
-Technology:
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NODE_ENV`
 
-- Next.js
-- TypeScript
-- React
-- Tailwind CSS
-- Leaflet
+Server-side provider credentials used by frontend weather routes:
 
-Responsibilities:
+- `TOMORROW_API_KEY`
+- `OPENWEATHER_API_KEY`
 
-- Administrative dashboard
-- Flood monitoring interface
-- Sensor visualization
-- Flood heatmap
-- Resident management
-- Relief inventory
-- AI recommendation interface
+The weather keys must not be renamed with a `NEXT_PUBLIC_` prefix.
 
----
+### API
 
-### Backend
+Private runtime configuration:
 
-The backend provides the main application API and business logic.
+- `MONGODB_URI`
+- `MONGODB_DB`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SMARTFLOOD_SESSION_SECRET`
+- `AI_BACKEND_URL`
+- `CORS_ORIGINS`
+- `CAMPAIGN_QR_ENCRYPTION_KEY`
+- `NODE_ENV`
+- `PORT`
 
-Technology:
+`CAMPAIGN_QR_ENCRYPTION_KEY` must encode exactly 32 bytes. Production should
+set the dedicated `SMARTFLOOD_SESSION_SECRET`; the existing service-role
+fallback remains application behavior and is not changed here.
 
-- Node.js
-- Express
-- TypeScript
-- Supabase
-- PostgreSQL
+### AI service
 
-Responsibilities:
+Private runtime configuration:
 
-- Authentication and authorization
-- Resident management
-- Family management
-- Relief inventory
-- Application processing
-- AI recommendation integration
-- API communication
+- `MONGODB_URI`
+- `MONGODB_DB`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CORS_ORIGINS`
+- `PORT`
 
----
+MongoDB Atlas and Supabase remain external managed dependencies. No database
+schema, authentication/RBAC behavior, or API contract is changed by the AWS
+migration documentation.
 
-### AI Service
+## AWS migration direction
 
-The AI service provides the recommendation and optimization functionality used by SmartFlood.
+The intended target is AWS in `ap-southeast-1`:
 
-Technology:
+- Amazon ECR repositories for frontend, API, and AI images.
+- ECS/Fargate services for the three application services.
+- An internet-facing ALB for the frontend only.
+- Private service-to-service connectivity from frontend to API and API to AI.
+- CloudWatch logs with explicit retention.
+- Secrets Manager or Parameter Store for private runtime values.
+- Terraform for staging infrastructure.
+- GitHub Actions with restricted AWS OIDC for image publishing and deployment.
 
-- Python
-- FastAPI
-- AHP
-- Fuzzy Logic
+These resources are not created by Phase 1.
 
-Responsibilities:
+## Phase status
 
-- Relief allocation recommendations
-- Disaster response prioritization
-- AI-based decision support
-- Communication with the main backend
+### Completed in Phase 1
 
----
+- Imported the required frontend, API, AI, and Supabase migration source.
+- Preserved service lockfiles and application configuration.
+- Added the V4.1 root `.gitignore`.
+- Corrected this README to match verified frameworks, ports, entry points,
+  request flow, health endpoints, dependencies, and environment variables.
 
-## AWS Infrastructure
+### Not included in Phase 1
 
-The target AWS architecture uses managed AWS services for container deployment, networking, monitoring, and security.
+- Dockerfiles or container builds.
+- Terraform or AWS resources.
+- GitHub Actions deployment workflows.
+- Application behavior, health responses, schemas, authentication, or API
+  contract changes.
 
-### Amazon ECR
+## Validation policy
 
-Amazon Elastic Container Registry is used to store application container images.
-
-Expected repositories:
-
-```text
-smartflood/frontend
-smartflood/backend
-smartflood/ai-service
-```
-
-The deployment pipeline will build Docker images and push them to ECR before deploying new versions.
-
----
-
-### Amazon ECS / AWS Fargate
-
-Amazon Elastic Container Service is used to run the SmartFlood containers.
-
-AWS Fargate provides serverless container execution without requiring direct management of EC2 instances.
-
-Expected services:
-
-```text
-ECS Cluster
-|
-+-- frontend-service
-|
-+-- backend-service
-|
-+-- ai-service
-```
-
-Each service can be independently updated and scaled.
-
----
-
-### Application Load Balancer
-
-The Application Load Balancer provides a single entry point for HTTP and HTTPS traffic.
-
-Expected routing:
-
-```text
-Internet
-   |
-   v
-Application Load Balancer
-   |
-   +-- Frontend
-   |
-   +-- Backend API
-   |
-   +-- AI Service
-```
-
-Routing rules may be adjusted as the production architecture evolves.
-
----
-
-### Amazon VPC
-
-The application infrastructure will operate inside an AWS Virtual Private Cloud.
-
-The VPC will provide network isolation and controlled communication between application components.
-
-Planned components include:
-
-- Public subnets
-- Private subnets
-- Internet Gateway
-- Route tables
-- Security groups
-- Network access controls
-
----
-
-### IAM
-
-AWS Identity and Access Management will be used to control access to AWS resources.
-
-The deployment will follow the principle of least privilege whenever possible.
-
-Examples include:
-
-- ECS task execution roles
-- ECS task roles
-- ECR access
-- CloudWatch logging permissions
-- CI/CD deployment permissions
-
----
-
-### Amazon CloudWatch
-
-CloudWatch will be used for application and infrastructure monitoring.
-
-Expected functionality:
-
-- Container logs
-- Application logs
-- Error monitoring
-- CPU utilization
-- Memory utilization
-- Service health
-- Deployment monitoring
-
----
-
-## Cloud Run to AWS Migration
-
-The project originally used Google Cloud Run for container deployment.
-
-The target architecture replaces the Cloud Run deployment model with AWS services.
-
-| Previous Architecture                         | Target Architecture      |
-| --------------------------------------------- | ------------------------ |
-| Google Cloud Run                              | Amazon ECS / AWS Fargate |
-| Google Container Registry / Artifact Registry | Amazon ECR               |
-| Cloud Run networking                          | Amazon VPC               |
-| Cloud Run logs                                | Amazon CloudWatch        |
-| Google IAM                                    | AWS IAM                  |
-| GCP deployment workflow                       | AWS deployment workflow  |
-
-The goal is not simply to move hosting providers.
-
-The migration is also intended to improve infrastructure knowledge, deployment control, security practices, and DevOps experience.
-
----
-
-## Containerization
-
-Each major SmartFlood service is packaged as a Docker container.
-
-Expected containers:
-
-```text
-Frontend
-    |
-    +-- Docker image
-    |
-    +-- Amazon ECR
-    |
-    +-- ECS/Fargate
-
-Backend
-    |
-    +-- Docker image
-    |
-    +-- Amazon ECR
-    |
-    +-- ECS/Fargate
-
-AI Service
-    |
-    +-- Docker image
-    |
-    +-- Amazon ECR
-    |
-    +-- ECS/Fargate
-```
-
-Each service should have its own Dockerfile and dependency configuration.
-
----
-
-## Local Development
-
-The services can be developed locally before being deployed to AWS.
-
-Example project structure:
-
-```text
-smartflood/
-|
-+-- frontend/
-|
-+-- backend/
-|
-+-- ai-service/
-|
-+-- docker/
-|
-+-- infrastructure/
-|
-+-- .github/
-|
-+-- README.md
-```
-
----
-
-## Docker Development
-
-Build the frontend container:
-
-```bash
-docker build -t smartflood-frontend ./frontend
-```
-
-Build the backend container:
-
-```bash
-docker build -t smartflood-backend ./backend
-```
-
-Build the AI service container:
-
-```bash
-docker build -t smartflood-ai ./ai-service
-```
-
-Run a container locally:
-
-```bash
-docker run --env-file .env smartflood-frontend
-```
-
-The exact ports and environment variables will depend on the final application configuration.
-
----
-
-## Environment Variables
-
-Sensitive configuration must not be committed to the repository.
-
-Examples of environment variables include:
-
-```text
-DATABASE_URL=
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-MONGODB_URI=
-
-AI_SERVICE_URL=
-
-NEXT_PUBLIC_API_URL=
-
-AWS_REGION=
-AWS_ACCOUNT_ID=
-```
-
-Actual secrets should be stored using an appropriate secrets management solution rather than committed to Git.
-
----
-
-## CI/CD Pipeline
-
-The planned deployment pipeline uses GitHub Actions.
-
-```text
-Developer
-    |
-    v
-Git Push
-    |
-    v
-GitHub Actions
-    |
-    +-- Install dependencies
-    |
-    +-- Lint
-    |
-    +-- Type checking
-    |
-    +-- Tests
-    |
-    +-- Security checks
-    |
-    +-- Docker build
-    |
-    v
-Amazon ECR
-    |
-    v
-Amazon ECS
-    |
-    v
-AWS Fargate
-```
-
-The pipeline will eventually automate the build and deployment process.
-
----
-
-## DevSecOps
-
-Security is treated as part of the deployment lifecycle rather than a separate final step.
-
-Planned security practices include:
-
-- Dependency scanning
-- Container image scanning
-- Secret management
-- Least-privilege IAM
-- Network segmentation
-- HTTPS
-- Secure environment variables
-- Container hardening
-- CloudWatch monitoring
-- Infrastructure security review
-
-Future security improvements may include:
-
-- AWS WAF
-- GuardDuty
-- Security Hub
-- Automated vulnerability scanning
-- Infrastructure security scanning
-- Runtime monitoring
-
----
-
-## Infrastructure as Code
-
-The AWS infrastructure is intended to be managed using Infrastructure as Code.
-
-Planned tooling:
-
-- Terraform
-
-Expected structure:
-
-```text
-infrastructure/
-|
-+-- terraform/
-    |
-    +-- main.tf
-    +-- variables.tf
-    +-- outputs.tf
-    +-- provider.tf
-    +-- vpc.tf
-    +-- ecr.tf
-    +-- ecs.tf
-    +-- alb.tf
-    +-- iam.tf
-    +-- cloudwatch.tf
-```
-
-Infrastructure should be reproducible rather than manually configured whenever practical.
-
----
-
-## Deployment Strategy
-
-The intended deployment process is:
-
-```text
-1. Developer changes application code
-2. Changes are pushed to GitHub
-3. CI pipeline validates the application
-4. Docker images are built
-5. Images are pushed to Amazon ECR
-6. ECS task definitions are updated
-7. ECS services deploy the new containers
-8. Health checks verify the deployment
-9. CloudWatch monitors the running services
-```
-
----
-
-## Monitoring
-
-The deployment will use AWS monitoring capabilities to observe application and infrastructure health.
-
-Important metrics include:
-
-- CPU utilization
-- Memory utilization
-- Container restarts
-- Application errors
-- HTTP response status codes
-- Request latency
-- Service availability
-- Deployment failures
-
-Logs should provide enough information to troubleshoot application and infrastructure issues without exposing sensitive information.
-
----
-
-## Database Architecture
-
-SmartFlood uses external managed database services.
-
-### Supabase
-
-Supabase PostgreSQL is used for application data such as:
-
-- Users
-- Barangays
-- Families
-- Residents
-- Resident applications
-- Relief inventory
-- AI recommendations
-
-### MongoDB Atlas
-
-MongoDB Atlas is used for sensor-related data and other document-oriented workloads.
-
-The AWS application services communicate with these managed database platforms through secured connections.
-
----
-
-## Security Considerations
-
-The deployment should follow these principles:
-
-### Least Privilege
-
-AWS identities should receive only the permissions required to perform their responsibilities.
-
-### Network Segmentation
-
-Public-facing components should be separated from internal services where appropriate.
-
-### Secret Management
-
-Credentials and API keys must never be hardcoded into source code or Docker images.
-
-### Container Security
-
-Container images should use minimal base images and should avoid unnecessary packages and privileges.
-
-### HTTPS
-
-Production traffic should use HTTPS.
-
-### Logging
-
-Logs should avoid exposing:
-
-- Passwords
-- API keys
-- Access tokens
-- Database credentials
-- Personally identifiable information
-
----
-
-## Cost Considerations
-
-AWS infrastructure introduces recurring cloud costs.
-
-The final cost depends on:
-
-- ECS/Fargate CPU allocation
-- ECS/Fargate memory allocation
-- Number of running tasks
-- Application Load Balancer usage
-- ECR storage
-- CloudWatch logs
-- Data transfer
-- NAT Gateway usage
-- Other AWS services
-
-During development, resources should be sized appropriately and unused infrastructure should be shut down or removed.
-
----
-
-## Migration Goals
-
-The migration from Cloud Run to AWS aims to achieve the following:
-
-- Containerize all major SmartFlood services
-- Deploy containers using AWS
-- Establish reproducible infrastructure
-- Implement CI/CD
-- Improve deployment visibility
-- Apply DevSecOps practices
-- Learn production-oriented AWS architecture
-- Establish a foundation for future scalability
-
----
-
-## Current Status
-
-The project is currently undergoing migration from Google Cloud Run to AWS.
-
-### Completed
-
-- SmartFlood application development
-- Frontend containerization planning
-- Backend containerization planning
-- AI service containerization planning
-- AWS architecture planning
-
-### In Progress
-
-- Docker container implementation
-- Amazon ECR setup
-- ECS/Fargate deployment
-- VPC configuration
-- Application Load Balancer configuration
-- CI/CD pipeline
-- Infrastructure as Code
-
-### Planned
-
-- Automated security scanning
-- Advanced AWS monitoring
-- Infrastructure security hardening
-- Production deployment optimization
-
----
-
-## Future Improvements
-
-Potential future improvements include:
-
-- Terraform-based infrastructure provisioning
-- Blue/green deployments
-- Automated rollback
-- AWS WAF
-- AWS GuardDuty
-- AWS Security Hub
-- Container vulnerability scanning
-- Centralized observability
-- Automated disaster recovery
-- Multi-environment deployment
-- Infrastructure testing
-- Performance testing
-- Cost optimization
-
----
-
-## Learning Objectives
-
-This deployment is also a practical learning project focused on modern cloud and DevSecOps engineering.
-
-Key learning areas include:
-
-- Docker
-- Container networking
-- AWS ECS
-- AWS Fargate
-- Amazon ECR
-- AWS VPC
-- Application Load Balancer
-- IAM
-- CloudWatch
-- Terraform
-- GitHub Actions
-- CI/CD
-- Container security
-- Cloud security
-- Infrastructure as Code
-
----
-
-## Technology Stack
-
-### Application
-
-- Next.js
-- TypeScript
-- React
-- Tailwind CSS
-- Node.js
-- Express
-- Python
-- FastAPI
-
-### Data
-
-- PostgreSQL
-- Supabase
-- MongoDB Atlas
-
-### Cloud
-
-- AWS
-- Amazon ECS
-- AWS Fargate
-- Amazon ECR
-- Amazon VPC
-- Application Load Balancer
-- AWS IAM
-- Amazon CloudWatch
-
-### DevOps
-
-- Docker
-- Terraform
-- GitHub Actions
-
-### Security
-
-- IAM
-- Network segmentation
-- Container security
-- Dependency scanning
-- Vulnerability scanning
-- Cloud monitoring
-
----
-
-## Project Philosophy
-
-The goal of this migration is not simply to deploy SmartFlood to another cloud provider.
-
-The goal is to understand the complete lifecycle of a modern application:
-
-```text
-Application Development
-        |
-        v
-Containerization
-        |
-        v
-Continuous Integration
-        |
-        v
-Security Validation
-        |
-        v
-Container Registry
-        |
-        v
-Cloud Infrastructure
-        |
-        v
-Application Deployment
-        |
-        v
-Monitoring
-        |
-        v
-Continuous Improvement
-```
-
-SmartFlood serves as the practical environment for applying these concepts to a real application.
-
----
-
-## Author
-
-**Mark Aquino**
-
-Full-Stack Developer | DevSecOps Learner
-
-SmartFlood is an academic and engineering project focused on flood monitoring, AI-assisted relief allocation, cloud infrastructure, and secure application deployment.
-# Smart-Flood-V5-AWS
+Phase 1 validates repository contents and exclusions only. Builds, tests,
+container startup, and service-to-service communication belong to later
+phases and must not be reported as successful until actually executed.

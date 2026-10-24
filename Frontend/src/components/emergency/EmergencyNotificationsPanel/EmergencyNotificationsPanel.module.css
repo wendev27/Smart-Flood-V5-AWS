@@ -1,0 +1,420 @@
+.stack {
+  display: grid;
+  gap: 18px;
+}
+
+.summary {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dce9f9;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: clamp(18px, 2vw, 24px);
+}
+
+.summary span {
+  color: #0f61ff;
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+
+.summary h3 {
+  color: #14385f;
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0 0 7px;
+}
+
+.summary p {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.summary strong {
+  background: #eef6ff;
+  border: 1px solid #cfe2ff;
+  border-radius: 8px;
+  color: #0f61ff;
+  flex: 0 0 auto;
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+.stateMessage,
+.errorMessage,
+.emptyState {
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 12px 14px;
+}
+
+.stateMessage {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.errorMessage {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.emptyState {
+  background: #ffffff;
+  border: 1px dashed #cfe2ff;
+  color: #64748b;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #dce9f9;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.cardHeader {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.cardHeader time {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status {
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 7px 10px;
+}
+
+.pending {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.read {
+  background: #eef6ff;
+  color: #175cd3;
+}
+
+.accepted {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.received {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.notified {
+  background: #eef6ff;
+  color: #175cd3;
+}
+
+.rejected {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.card h3 {
+  color: #14385f;
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.card p {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metrics div {
+  background: #f8fbff;
+  border: 1px solid #dce9f9;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 12px;
+}
+
+.metrics strong {
+  color: #0f61ff;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.metrics span {
+  color: #475569;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.largeMetrics .metrics,
+.largeMetrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.largeMetrics strong {
+  font-size: 24px;
+}
+
+.primaryButton,
+.secondaryButton {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.primaryButton {
+  background: #0966ff;
+  color: #ffffff;
+}
+
+.secondaryButton {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.modalHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding-bottom: 0;
+}
+
+.modalHeader span {
+  color: #0f61ff;
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+
+.modalHeader h2 {
+  color: #14385f;
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.modalHeader p {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.modalHeader button {
+  background: #eef6ff;
+  border: 0;
+  border-radius: 50%;
+  color: #175cd3;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 900;
+  height: 34px;
+  width: 34px;
+}
+
+.modalBody {
+  display: grid;
+  gap: 16px;
+}
+
+.details {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.details div {
+  background: #f8fbff;
+  border: 1px solid #dce9f9;
+  border-radius: 8px;
+  padding: 11px 12px;
+}
+
+.details dt {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.details dd {
+  color: #14385f;
+  font-size: 12px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.explanation {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 12px;
+}
+
+.modalActions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 0;
+}
+
+.workflowNote {
+  color: #14385f;
+  font-size: 12px;
+  font-weight: 900;
+  margin: 0 auto 0 0;
+}
+
+@media (max-width: 720px) {
+  .summary,
+  .cardHeader,
+  .modalActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .metrics,
+  .largeMetrics,
+  .details {
+    grid-template-columns: 1fr;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+}
+
+/* Port 5173 barangay allocation composition. */
+
+
+.stack { display: flex; flex-direction: column; gap: 0; min-height: calc(100dvh - 190px); }
+
+.allocationFilter { color: #1e1e1e; display: grid; font-size: 16px; gap: 8px; margin-bottom: 28px; max-width: 268px; }
+.allocationFilter select { appearance: none; background-color: transparent; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%230088ff' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-position: right 14px center; background-repeat: no-repeat; border: .8px solid rgba(30,30,30,.25); border-radius: 16px; color: #1e1e1e; font-size: 16px; height: 42px; padding: 0 44px 0 20px; }
+
+.grid { align-items: stretch; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.card { border: 1px solid rgba(255,255,255,.7); border-radius: 26px; box-shadow: 0 6px 18px rgba(37,99,235,.12); display: flex; flex-direction: column; gap: 0; height: auto; min-height: 320px; min-width: 0; overflow: hidden; padding: 15px 24px 19px; }
+.cardHeader time { color: rgba(30,30,30,.5); font-size: 12px; font-weight: 400; }
+.status { background: transparent; color: #0088ff; font-size: 12px; font-weight: 600; padding: 0; }
+.card h3 { color: #1e1e1e; font-size: 26px; font-weight: 400; line-height: 1.2; margin: 8px 0 0; }
+.card p { color: #1e1e1e; font-size: 12px; line-height: 1.45; margin-top: 12px; overflow-wrap: anywhere; }
+.card .metrics { display: grid; gap: 2px; grid-template-columns: 1fr; margin-top: 10px; }
+.card .metrics div { align-items: center; background: transparent; border: 0; display: flex; gap: 5px; min-height: 0; padding: 0; }
+.card .metrics strong { color: #0088ff; font-size: 12px; order: 2; }
+.card .metrics span { color: #1e1e1e; font-size: 12px; order: 1; }
+.card .primaryButton { background: rgba(220,235,255,.42); border: 1px solid rgba(255,255,255,.7); border-radius: 16px; box-shadow: 0 6px 18px rgba(37,99,235,.12); color: #0088ff; flex: 0 0 42px; font-size: 12px; height: 42px; margin-top: auto; width: 100%; }
+.card .lineItems { margin-bottom: 16px; }
+.lineItems { display: grid; gap: 2px; margin: 10px 0 0; }
+.lineItems div { display: flex; font-size: 12px; font-weight: 600; gap: 4px; }
+.lineItems dt { color: #1e1e1e; }
+.lineItems dd { color: #0088ff; margin: 0; }
+
+.modalHeader { padding: 40px 40px 0; }
+.allocationDialog { border-radius: 16px; height: auto; max-height: calc(100dvh - 48px); min-height: 0; overflow-x: hidden; overflow-y: auto; }
+.modalBody { padding: 30px 40px; }
+.modalActions { padding: 0 40px 32px; }
+.modalHeader button { background: #a8d5ff; border-radius: 10px; color: #0088ff; height: 40px; width: 40px; }
+.modalHeader span { color: #0088ff; font-size: 16px; font-weight: 400; text-transform: none; }
+.modalHeader h2 { color: #1e1e1e; font-size: 20px; }
+.modalHeader p { color: #1e1e1e; font-size: 16px; }
+.modalBody .details { gap: 20px 32px; }
+.modalBody .details div { background: #fff; border: .8px solid rgba(30,30,30,.24); border-radius: 16px; min-height: 85px; padding: 20px 22px; }
+.modalBody .details dt { color: #1e1e1e; font-size: 16px; font-weight: 400; text-transform: none; }
+.modalBody .details dd { color: rgba(30,30,30,.58); font-size: 12px; font-weight: 400; }
+.explanation { background: transparent; border: 0; color: #1e1e1e; font-size: 16px; padding: 0; }
+.modalActions .primaryButton { background: #0088ff; border-radius: 16px; font-size: 16px; min-height: 50px; }
+
+.modalActions .primaryButton { margin: 0 auto; max-width: 500px; width: 100%; }
+
+@media (max-width: 680px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 0; }
+  .modalHeader { padding: 24px 24px 0; }
+  .modalBody { padding: 24px; }
+  .modalActions { padding: 0 24px 24px; }
+}
+
+.summary { margin-bottom: 28px; }
+.modalActions { display: flex; flex-wrap: wrap; gap: 16px; }
+.modalActions .secondaryButton { border: 1px solid #ef4444; border-radius: 16px; color: #dc2626; font-size: 16px; min-height: 50px; padding: 12px 20px; }
+.modalActions .primaryButton { margin: 0; flex: 1; width: auto; }
+.card .metrics { margin-bottom: 20px; }
+
+.unavailableReports { border-top: 1px solid #dbe5f0; color: #64748b; margin-top: 36px; padding-top: 20px; }
+.unavailableReports > summary { color: #0088ff; cursor: pointer; font-size: 16px; font-weight: 600; }
+
+/* Keep the existing modal content/actions mounted, but match the compact reference view. */
+.allocationDialog .modalBody > .largeMetrics {
+  display: none;
+}
+
+.allocationDialog .modalActions {
+  justify-content: center;
+}
+
+.allocationDialog .modalActions .secondaryButton {
+  display: none;
+}
+
+.allocationDialog .modalActions .primaryButton {
+  flex: 0 1 500px;
+  margin: 0 auto;
+  width: 100%;
+}
